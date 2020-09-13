@@ -13,11 +13,11 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Interactable
+  - Teleportation
+  - Player
+  - LocalAvatarHead
+  - LocalAvatarBody
   - 
   - 
   - 
