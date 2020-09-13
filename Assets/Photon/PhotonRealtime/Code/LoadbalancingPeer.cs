@@ -904,7 +904,7 @@ namespace Photon.Realtime
         /// <returns>If operation could be enqueued for sending. Sent when calling: Service or SendOutgoingCommands.</returns>
         public virtual bool OpRaiseEvent(byte eventCode, object customEventContent, RaiseEventOptions raiseEventOptions, SendOptions sendOptions)
         {
-            var paramDict = this.paramDictionaryPool.Acquire();
+            var paramDict = this.paramDictionaryPool.Pop();
             try
             {
                 if (raiseEventOptions != null)
@@ -959,7 +959,7 @@ namespace Photon.Realtime
             }
             finally
             {
-                this.paramDictionaryPool.Release(paramDict);
+                this.paramDictionaryPool.Push(paramDict);
             }
         }
 
@@ -1234,11 +1234,6 @@ namespace Photon.Realtime
         public const int ExternalHttpCallFailed = 32744; // 0x7FFF - 23,
 
         /// <summary>
-        /// (32743) for operations with defined limits (as in calls per second, content count or size).
-        /// </summary>
-        public const int OperationLimitReached = 32743; // 0x7FFF - 24,
-
-        /// <summary>
         /// (32742) Server error during matchmaking with slot reservation. E.g. the reserved slots can not exceed MaxPlayers.
         /// </summary>
         public const int SlotError = 32742; // 0x7FFF - 25,
@@ -1453,7 +1448,7 @@ namespace Photon.Realtime
         /// <summary>(250) Code for broadcast parameter of OpSetProperties method.</summary>
         public const byte Broadcast = (byte)250;
 
-        /// <summary>(252) Code for list of players in a room.</summary>
+        /// <summary>(252) Code for list of players in a room. Currently not used.</summary>
         public const byte ActorList = (byte)252;
 
         /// <summary>(254) Code of the Actor of an operation. Used for property get and set.</summary>
@@ -2109,8 +2104,7 @@ namespace Photon.Realtime
         /// <summary>See AuthType.</summary>
         private CustomAuthenticationType authType = CustomAuthenticationType.None;
 
-        /// <summary>The type of authentication provider that should be used. Defaults to None (no auth whatsoever).</summary>
-        /// <remarks>Several auth providers are available and CustomAuthenticationType.Custom can be used if you build your own service.</remarks>
+        /// <summary>The type of custom authentication provider that should be used. Currently only "Custom" or "None" (turns this off).</summary>
         public CustomAuthenticationType AuthType
         {
             get { return authType; }
@@ -2128,9 +2122,8 @@ namespace Photon.Realtime
         /// <remarks>Maps to operation parameter 214.</remarks>
         public object AuthPostData { get; private set; }
 
-        /// <summary>Internal <b>Photon token</b>. After initial authentication, Photon provides a token for this client, subsequently used as (cached) validation.</summary>
-        /// <remarks>Any token for custom authentication should be set via SetAuthPostData or AddAuthParameter.</remarks>
-        public string Token { get; protected internal set; }
+        /// <summary>After initial authentication, Photon provides a token for this client / user, which is subsequently used as (cached) validation.</summary>
+        public string Token { get; set; }
 
         /// <summary>The UserId should be a unique identifier per user. This is for finding friends, etc..</summary>
         /// <remarks>See remarks of AuthValues for info about how this is set and used.</remarks>
@@ -2150,7 +2143,7 @@ namespace Photon.Realtime
         }
 
         /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
-        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary.</remarks>
+        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary. Each SetAuthPostData replaces any previous value.</remarks>
         /// <param name="stringData">String data to be used in the body of the POST request. Null or empty string will set AuthPostData to null.</param>
         public virtual void SetAuthPostData(string stringData)
         {
@@ -2158,7 +2151,7 @@ namespace Photon.Realtime
         }
 
         /// <summary>Sets the data to be passed-on to the auth service via POST.</summary>
-        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary.</remarks>
+        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary. Each SetAuthPostData replaces any previous value.</remarks>
         /// <param name="byteData">Binary token / auth-data to pass on.</param>
         public virtual void SetAuthPostData(byte[] byteData)
         {
@@ -2166,7 +2159,7 @@ namespace Photon.Realtime
         }
 
         /// <summary>Sets data to be passed-on to the auth service as Json (Content-Type: "application/json") via Post.</summary>
-        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary.</remarks>
+        /// <remarks>AuthPostData is just one value. Each SetAuthPostData replaces any previous value. It can be either a string, a byte[] or a dictionary. Each SetAuthPostData replaces any previous value.</remarks>
         /// <param name="dictData">A authentication-data dictionary will be converted to Json and passed to the Auth webservice via HTTP Post.</param>
         public virtual void SetAuthPostData(Dictionary<string, object> dictData)
         {
@@ -2183,10 +2176,6 @@ namespace Photon.Realtime
             this.AuthGetParameters = string.Format("{0}{1}{2}={3}", this.AuthGetParameters, ampersand, System.Uri.EscapeDataString(key), System.Uri.EscapeDataString(value));
         }
 
-        /// <summary>
-        /// Transform this object into string.
-        /// </summary>
-        /// <returns>string representation of this object.</returns>
         public override string ToString()
         {
             return string.Format("AuthenticationValues Type: {3} UserId: {0}, GetParameters: {1} Token available: {2}", this.UserId, this.AuthGetParameters, !string.IsNullOrEmpty(this.Token), this.AuthType);

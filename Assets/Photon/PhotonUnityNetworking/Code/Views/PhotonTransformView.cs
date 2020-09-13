@@ -13,12 +13,16 @@ namespace Photon.Pun
 {
     using UnityEngine;
 
+
     [AddComponentMenu("Photon Networking/Photon Transform View")]
     [HelpURL("https://doc.photonengine.com/en-us/pun/v2/gameplay/synchronization-and-state")]
-    public class PhotonTransformView : MonoBehaviourPun, IPunObservable
+    [RequireComponent(typeof(PhotonView))]
+    public class PhotonTransformView : MonoBehaviour, IPunObservable
     {
         private float m_Distance;
         private float m_Angle;
+
+        private PhotonView m_PhotonView;
 
         private Vector3 m_Direction;
         private Vector3 m_NetworkPosition;
@@ -34,7 +38,9 @@ namespace Photon.Pun
 
         public void Awake()
         {
-            m_StoredPosition = transform.localPosition;
+            m_PhotonView = GetComponent<PhotonView>();
+
+            m_StoredPosition = transform.position;
             m_NetworkPosition = Vector3.zero;
 
             m_NetworkRotation = Quaternion.identity;
@@ -47,10 +53,10 @@ namespace Photon.Pun
 
         public void Update()
         {
-            if (!this.photonView.IsMine)
+            if (!this.m_PhotonView.IsMine)
             {
-                transform.localPosition = Vector3.MoveTowards(transform.localPosition, this.m_NetworkPosition, this.m_Distance * (1.0f / PhotonNetwork.SerializationRate));
-                transform.localRotation = Quaternion.RotateTowards(transform.localRotation, this.m_NetworkRotation, this.m_Angle * (1.0f / PhotonNetwork.SerializationRate));
+                transform.position = Vector3.MoveTowards(transform.position, this.m_NetworkPosition, this.m_Distance * (1.0f / PhotonNetwork.SerializationRate));
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, this.m_NetworkRotation, this.m_Angle * (1.0f / PhotonNetwork.SerializationRate));
             }
         }
 
@@ -60,16 +66,16 @@ namespace Photon.Pun
             {
                 if (this.m_SynchronizePosition)
                 {
-                    this.m_Direction = transform.localPosition - this.m_StoredPosition;
-                    this.m_StoredPosition = transform.localPosition;
+                    this.m_Direction = transform.position - this.m_StoredPosition;
+                    this.m_StoredPosition = transform.position;
 
-                    stream.SendNext(transform.localPosition);
+                    stream.SendNext(transform.position);
                     stream.SendNext(this.m_Direction);
                 }
 
                 if (this.m_SynchronizeRotation)
                 {
-                    stream.SendNext(transform.localRotation);
+                    stream.SendNext(transform.rotation);
                 }
 
                 if (this.m_SynchronizeScale)
@@ -88,17 +94,17 @@ namespace Photon.Pun
 
                     if (m_firstTake)
                     {
-                        transform.localPosition = this.m_NetworkPosition;
+                        transform.position = this.m_NetworkPosition;
                         this.m_Distance = 0f;
                     }
                     else
                     {
                         float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
                         this.m_NetworkPosition += this.m_Direction * lag;
-                        this.m_Distance = Vector3.Distance(transform.localPosition, this.m_NetworkPosition);
+                        this.m_Distance = Vector3.Distance(transform.position, this.m_NetworkPosition);
                     }
 
-
+                   
                 }
 
                 if (this.m_SynchronizeRotation)
@@ -108,11 +114,11 @@ namespace Photon.Pun
                     if (m_firstTake)
                     {
                         this.m_Angle = 0f;
-                        transform.localRotation = this.m_NetworkRotation;
+                        transform.rotation = this.m_NetworkRotation;
                     }
                     else
                     {
-                        this.m_Angle = Quaternion.Angle(transform.localRotation, this.m_NetworkRotation);
+                        this.m_Angle = Quaternion.Angle(transform.rotation, this.m_NetworkRotation);
                     }
                 }
 

@@ -4,46 +4,8 @@ Exit Games GmbH - www.photonengine.com - forum.photonengine.com
 
 
 
-Version 4.1.4.5 (04. September 2020 - rev5733)
-    Fixed: Serialization of a ByteArraySlice will now release it, as described in the docs. So you can pass a ByteArraySlice to RaiseEvent and control of it is passed over to the Photon API.
-    Fixed: Potential issues with SupportLogger.StartBackgroundCalls() when there were 255 threads running (and or stopped).
-    Changed: When PhotonClientWebSocket fails to connect, this will now correctly result in a disconnect with code/reason ExceptionOnConnect.
-    Changed: The socket reading-thread not call it's disconnect method, if already disconnecting/disconnected. This avoids a surplus call (and callback).
-    Internal: The thread locking object in SocketNative is no longers static.
-    Note: The next release will change the native datagram encryptor api. Most likely this is the last one compatible with the old native plugin.
-    
-Version 4.1.4.4 (29. June 2020 - rev5625)
-    Fixed: NonAllocDict. Capacity change was broken. This is a critical fix.
-    Added: Indexer to NonAllocDict to allow Dict[key] get and set.
-    Added: NonAllocDict.Clear() method.
-
-Version 4.1.4.3 (24. June 2020 - rev5622)
-    Added: PhotonPeer.UseByteArraySlicePoolForEvents and PhotonPeer.ByteArraySlicePool to avoid memory garbage when events consist only of a byte-array. See comments / doc.
-    Added: Class NonAllocDictionary<K,V> as replacement for the suboptimal implementation in Mono. Some of our code relies on Dictionaries and can be optimized with this. Note: This is neither documented well yet and considered "beta" until we got feedback on some use cases.
-    Added: PhotonPeer.TrafficRecorder and ITrafficRecorder. This can be used to capture traffic on UDP connections.
-    Changed: IPhotonSocket.ConnectAddress is now a local field. Before, it accessed the peer which might already connect to another server.
-    Changed: Debug log for DNS resolution (INFO level). This includes a count of IPs that were returned.
-    Added: Static PhotonPeer.NoNativeCallbacks to disable callbacks from native code to C#. SocketNative is the first class to use NoNativeCallbacks in DnsAndConnect().
-    Changed: SocketUdp and SocketTcp are now public, like other implementations. This means you can assign them to the SocketImplementationConfig and select these deliberately.
-    Internal: Datagram Encryption was updated and optimized. (rev5548+rev5550). Added PhotonPeer.NativeEncryptorApiVersion constant to be able to check which native encryptor API is being compiled into the assembly.
-    Changed: EnetPeer.ReceiveIncomingCommands(): bytesIn counter simplified: now it simply incremented by input data size.
-    Removed: "CommandLog" feature. It was replaced by Traffic Recording. Remaining setting values for this (in PhotonPeer) are now Obsolete and without function.
-    Changed: WebSocket init workflow to make it compatible with AuthOnce / AuthOnceWss. It can send an init request now.
-    Internal: WebSockets need to use the ConnectAddress, as the TPeer will setup the address and path as required.
-    Changed: The IPhotonSocket does not set the ConnectAddress again, so the Peer can set this address before connecting. This is used for WebSocket connects.
-    Fixed: NETFX_CORE variant of payload encryption initialization.
-    Added: PreserveAttribute and used it on IPhotonSocket constructors. This keeps Unity's code stripping from constructors which we need.
-    Fixed: A rare threading issue for UDP connections.
-    Internal: SupportClass.StartBackgroundCalls() and related methods are now locked. A proper cleanup of StartBackgroundCalls is pending.
-    Changed: SupportClass.StopBackgroundCalls(id) will now clear the reference to the used thread but not remove the entry in the list.
-    Changed: SupportClass.StopAllBackgroundCalls() will now clear all referenced threads. Could be used when disconnected / before another connect to reduce number of Threads.
-    Removed: SupportClass.CallInBackground, which was replaced by StartBackgroundCalls a while ago.
-
-
-Version 4.1.4.2 (08. May 2020 - rev5519)
-    Updated: DotNet SDK (net35, UWP and .Net Standard 2.0) and Unity SDK.
 Version 4.1.4.1 (30. April 2020 - rev5482)
-    Fixed: String serialization for characters with more bytes. UTF8.GetBytes was called with byte-count instead of character-count as parameter.
+	Fixed: String serialization for characters with more bytes. UTF8.GetBytes was called with byte-count instead of character-count as parameter.
 Version 4.1.4.0 (28. April 2020 - rev5474)
     Internal: Changed serialization of strings to produce no memory garbage. Strings that exceed a UTF8-encoded byte-length of 32767 (short.MaxValue) are not supported in either protocol (now throwing an exception).
     Internal: Improved the serialization of float, double, float-array and double-array to produce less memory garbage with better performance.
@@ -52,11 +14,12 @@ Version 4.1.4.0 (28. April 2020 - rev5474)
     Changed: The socket implementations now disconnect when an exception happens due to sending. This uses the StatusCode.SendError, reported via OnStatusChanged callback. The LoadBalancingClient will handle this and report a DisconnectCause.Exception. Careful when updating only the library: Handle this in LoadBalancingClient.
     Changed: The internal exception logging is now in log level INFO. This means the handled exception is no longer logged as if it's not.
     Internal: Reverted to using the datagram encryption API v1. The new one is not fully implemented and should not be used yet (but was in v4.1.3.0).
-    Fixed: If a timeout message arrives after the client disconnected locally, the timeout is neither reported (via OnStatusChanged) nor does it trigger (another) disconnect. This avoids rare issues where clients would get stuck in Disconnecting state.
-    Added: Initial changes to support proxies for WSS. The PhotonPeer got a Connect overload which sets the proxy address and the IPhotonSocket got ProxyServerAddress. Higher level changes are upcoming.
-    Fixed: When the StreamBuffer for a large message got fragmented, this goes back to the StreamBuffer pool.
-    Changed: ExecuteCommand() for fragments. We now use a StreamBuffer from the pool and only adjust the buffered size if needed.
-    Added: Static PhotonPeer.MessageBufferPoolSize() to have access to the current StreamBuffer pool size.
+	Fixed: If a timeout message arrives after the client disconnected locally, the timeout is neither reported (via OnStatusChanged) nor does it trigger (another) disconnect. This avoids rare issues where clients would get stuck in Disconnecting state.
+	Added: Initial changes to support proxies for WSS. The PhotonPeer got a Connect overload which sets the proxy address and the IPhotonSocket got ProxyServerAddress. Higher level changes are upcoming.
+	Fixed: When the StreamBuffer for a large message got fragmented, this goes back to the StreamBuffer pool.
+	Changed: ExecuteCommand() for fragments. We now use a StreamBuffer from the pool and only adjust the buffered size if needed.
+	Added: Static PhotonPeer.MessageBufferPoolSize() to have access to the current StreamBuffer pool size.
+
 
 Version 4.1.3.0 (23. March 2020 - rev5399)
     Internal: Changed Visual Studio projects which build the C# Photon libraries. Added a .Net Standard 2.0 assembly, which has built-in WebSocket support.

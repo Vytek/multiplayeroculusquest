@@ -11,8 +11,14 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/IRONHEAD Games/Scenes/HomeScene.unity
     guid: 66249e54836b48a42acadcc57da3e448
+  - enabled: 1
+    path: Assets/IRONHEAD Games/Scenes/World_School.unity
+    guid: b72244336204212439510723e69fa9f9
+  - enabled: 1
+    path: Assets/IRONHEAD Games/Scenes/World_Outdoor.unity
+    guid: 5041d70b592f91c4c8b6824c2ef6484f
   m_configObjects:
-    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: ed1d7701a0de55f45897c55b0aafbfeb,
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: b8cf2bf8ab4046f41a5d65f8ffd39b3d,
       type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 06913bfee43acc1498102412753637f6,
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: bf5b1381058f763489af6603626c48c0,
       type: 2}

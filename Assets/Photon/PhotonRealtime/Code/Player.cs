@@ -60,12 +60,6 @@ namespace Photon.Realtime
         public readonly bool IsLocal;
 
 
-        public bool HasRejoined
-        {
-            get; internal set;
-        }
-
-
         /// <summary>Background field for nickName.</summary>
 		private string nickName = string.Empty;
 

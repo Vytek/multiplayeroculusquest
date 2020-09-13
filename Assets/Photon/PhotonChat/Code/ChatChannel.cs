@@ -42,9 +42,6 @@ namespace Photon.Chat
         /// <summary>If greater than 0, this channel will limit the number of messages, that it caches locally.</summary>
         public int MessageLimit;
 
-        /// <summary>Unique channel ID.</summary>
-        public int ChannelID;
-
         /// <summary>Is this a private 1:1 channel?</summary>
         public bool IsPrivate { get; protected internal set; }
 
@@ -72,7 +69,7 @@ namespace Photon.Chat
         {
             this.Name = name;
         }
-        
+
         /// <summary>Used internally to add messages to this channel.</summary>
         public void Add(string sender, object message, int msgId)
         {
@@ -123,7 +120,7 @@ namespace Photon.Chat
             return txt.ToString();
         }
 
-        internal void ReadChannelProperties(Dictionary<object, object> newProperties)
+        internal void ReadProperties(Dictionary<object, object> newProperties)
         {
             if (newProperties != null && newProperties.Count > 0)
             {
@@ -131,15 +128,18 @@ namespace Photon.Chat
                 {
                     this.properties = new Dictionary<object, object>(newProperties.Count);
                 }
-                foreach (var pair in newProperties)
+                foreach (var k in newProperties.Keys)
                 {
-                    if (pair.Value == null)
+                    if (newProperties[k] == null)
                     {
-                        this.properties.Remove(pair.Key);
+                        if (this.properties.ContainsKey(k))
+                        {
+                            this.properties.Remove(k);
+                        }
                     }
                     else
                     {
-                        this.properties[pair.Key] = pair.Value;
+                        this.properties[k] = newProperties[k];
                     }
                 }
                 object temp;
@@ -166,28 +166,12 @@ namespace Photon.Chat
             }
         }
 
-        #if CHAT_EXTENDED
-        internal void ReadUserProperties(string userId, Dictionary<object, object> changedProperties)
+        internal void ClearProperties()
         {
-            throw new System.NotImplementedException();
-        }
-        
-        internal bool TryGetChannelProperty<T>(object propertyKey, out T propertyValue)
-        {
-            propertyValue = default(T);
-            object temp;
-            if (properties != null && properties.TryGetValue(propertyKey, out temp) && temp is T)
+            if (this.properties != null && this.properties.Count > 0)
             {
-                propertyValue = (T)temp;
-                return true;
+                this.properties.Clear();
             }
-            return false;
         }
-
-        public bool TryGetCustomChannelProperty<T>(string propertyKey, out T propertyValue)
-        {
-            return this.TryGetChannelProperty(propertyKey, out propertyValue);
-        }
-        #endif
     }
 }
